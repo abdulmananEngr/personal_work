@@ -1,0 +1,214 @@
+using System;
+using System.Collections.Generic;
+
+// Interface for all engines
+public interface IEngine
+{
+    void Start();
+}
+
+// Having engine implementation
+public class HavingEngine : IEngine
+{
+    public void Start()
+    {
+        Console.WriteLine("Engine starts.");
+    }
+}
+
+// Having no engine implementation
+public class HavingNoEngine : IEngine
+{
+    public void Start()
+    {
+        Console.WriteLine("No Engine - Manual Start.");
+    }
+}
+
+// Common vehicle interface for all vehicles that can move
+public interface IMovable
+{
+    void Move();
+    int SeatingCapacity { get; }
+}
+
+// Common vehicle interface for vehicles that can fly
+public interface IFly : IMovable
+{
+}
+
+// Common vehicle interface for vehicles that move on road
+public interface IRoadVehicle : IMovable
+{
+}
+
+// Common vehicle interface for vehicles that can move on water
+public interface IWaterVehicle : IMovable
+{
+}
+
+// Load vehicle interface
+public interface ILoadVehicle
+{
+    int Load { get; }
+}
+
+// Passenger vehicle interface
+public interface IPassengerVehicle
+{
+    int PassengerCapacity { get; }
+}
+
+// Boat class
+public class Boat : IWaterVehicle, ILoadVehicle
+{
+    private readonly IEngine _engine;
+
+    public Boat(int seatingCapacity, int load, bool hasEngine)
+    {
+        SeatingCapacity = seatingCapacity;
+        Load = load;
+        _engine = hasEngine ? new HavingEngine() : new HavingNoEngine();
+    }
+
+    public int SeatingCapacity { get; private set; }
+    public int Load { get; private set; }
+
+    public void Move()
+    {
+        _engine.Start();
+        Console.WriteLine("Boat is moving on water.");
+    }
+}
+
+// Aeroplan class
+public class Aeroplan : IFly, IPassengerVehicle
+{
+    private readonly IEngine _engine;
+
+    public Aeroplan(int seatingCapacity, int passengerCapacity, bool hasEngine)
+    {
+        SeatingCapacity = seatingCapacity;
+        PassengerCapacity = passengerCapacity;
+        _engine = hasEngine ? new HavingEngine() : new HavingNoEngine();
+    }
+
+    public int SeatingCapacity { get; private set; }
+    public int PassengerCapacity { get; private set; }
+
+    public void Move()
+    {
+        _engine.Start();
+        Console.WriteLine("Aeroplan is flying.");
+    }
+}
+
+// Train class
+public class Train : IRoadVehicle, ILoadVehicle
+{
+    private readonly IEngine _engine;
+
+    public Train(int seatingCapacity, int load, bool hasEngine)
+    {
+        SeatingCapacity = seatingCapacity;
+        Load = load;
+        _engine = hasEngine ? new HavingEngine() : new HavingNoEngine();
+    }
+
+    public int SeatingCapacity { get; private set; }
+    public int Load { get; private set; }
+
+    public void Move()
+    {
+        _engine.Start();
+        Console.WriteLine("Train is moving on the road.");
+    }
+}
+
+// Bike class
+public class Bike : IRoadVehicle
+{
+    private readonly IEngine _engine;
+
+    public Bike(int seatingCapacity, bool hasEngine)
+    {
+        SeatingCapacity = seatingCapacity;
+        _engine = hasEngine ? new HavingEngine() : new HavingNoEngine();
+    }
+
+    public int SeatingCapacity { get; private set; }
+
+    public void Move()
+    {
+        _engine.Start();
+        Console.WriteLine("Bike is moving on the road.");
+    }
+}
+
+// Cycle class
+public class Cycle : IMovable
+{
+    public int SeatingCapacity { get; private set; }
+
+    public Cycle(int seatingCapacity)
+    {
+        SeatingCapacity = seatingCapacity;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine("Cycle is moving.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        List<IFly> flyingVehicles = new List<IFly>
+        {
+            new Aeroplan(150, 200, true),
+            new Aeroplan(2, 1, false)
+        };
+
+        List<IRoadVehicle> roadVehicles = new List<IRoadVehicle>
+        {
+            new Train(300, 0, true),
+            new Bike(2, false)
+        };
+
+        List<IWaterVehicle> waterVehicles = new List<IWaterVehicle>
+        {
+            new Boat(5, 100, true)
+        };
+
+        List<IMovable> allVehicles = new List<IMovable>
+        {
+            new Aeroplan(150, 200, true),
+            new Aeroplan(2, 1, false),
+            new Train(300, 0, true),
+            new Bike(2, false),
+            new Cycle(1)
+        };
+
+        foreach (var vehicle in flyingVehicles)
+        {
+            vehicle.Move();
+        }
+
+        foreach (var vehicle in roadVehicles)
+        {
+            vehicle.Move();
+        }
+
+        foreach (var vehicle in waterVehicles)
+        {
+            vehicle.Move();
+        }
+
+        foreach (var vehicle in allVehicles)
+        {
+            vehicle.Move();
+        }
+    }
+}
