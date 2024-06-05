@@ -1,0 +1,111 @@
+To ensure that the new window opens exactly at the reference position if it is within the screen bounds, and adjusts if it goes outside, we can modify the WindowCreator.CreateWindow method accordingly.
+
+Here's the updated code:
+
+MainWindow.xaml
+xml
+Copy code
+<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="600" Width="800">
+    <Grid>
+        <Button x:Name="OpenWindowButton" Content="Open Window" Width="100" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,50,50" Click="OpenWindowButton_Click"/>
+    </Grid>
+</Window>
+MainWindow.xaml.cs
+csharp
+Copy code
+using System;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Interop;
+using System.Windows.Controls;
+
+namespace WpfApp
+{
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void OpenWindowButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the button's screen position
+            var button = sender as Button;
+            var buttonPosition = button.PointToScreen(new System.Windows.Point(0, 0));
+
+            // Call the function to create the window
+            WindowCreator.CreateWindow((int)buttonPosition.X, (int)buttonPosition.Y);
+        }
+    }
+
+    public static class WindowCreator
+    {
+        public static void CreateWindow(int x_reference_position, int y_reference_position)
+        {
+            // Create a new window
+            var win = new Window
+            {
+                Width = 200, // Example window width
+                Height = 150, // Example window height
+                WindowStartupLocation = WindowStartupLocation.Manual
+            };
+
+            // Get the working area of the screen
+            var workingArea = Screen.FromPoint(new System.Drawing.Point(x_reference_position, y_reference_position)).WorkingArea;
+
+            // Check if the window would be outside the working area
+            int adjustedX = x_reference_position;
+            int adjustedY = y_reference_position;
+
+            if (x_reference_position + win.Width > workingArea.Right)
+            {
+                adjustedX = workingArea.Right - (int)win.Width;
+            }
+
+            if (y_reference_position + win.Height > workingArea.Bottom)
+            {
+                adjustedY = workingArea.Bottom - (int)win.Height;
+            }
+
+            if (adjustedX < workingArea.Left)
+            {
+                adjustedX = workingArea.Left;
+            }
+
+            if (adjustedY < workingArea.Top)
+            {
+                adjustedY = workingArea.Top;
+            }
+
+            // Set the position of the window
+            win.Left = adjustedX;
+            win.Top = adjustedY;
+
+            // Show the window
+            win.Show();
+        }
+    }
+}
+Explanation:
+MainWindow.xaml:
+
+Defines the UI with a button positioned near the bottom-right corner.
+MainWindow.xaml.cs:
+
+Handles the button click event to retrieve the button's screen position and calls the CreateWindow method with these coordinates.
+WindowCreator:
+
+Creates a new WPF window (win) and sets its dimensions.
+Retrieves the working area of the screen where the button is located using Screen.FromPoint.
+Initializes adjustedX and adjustedY to the reference positions.
+Adjusts adjustedX and adjustedY only if the window would extend outside the working area:
+If the right edge of the window would go outside the working area, adjustedX is set to position the window's right edge within the working area.
+If the bottom edge of the window would go outside the working area, adjustedY is set to position the window's bottom edge within the working area.
+Ensures the window's left edge and top edge remain within the working area.
+Sets the window's Left and Top properties to adjustedX and adjustedY.
+Shows the window using win.Show().
+This ensures that the window opens at the reference position if it's within the screen bounds. If the window would go outside, it adjusts to remain within the visible working area.
