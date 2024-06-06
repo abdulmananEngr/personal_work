@@ -1,0 +1,65 @@
+Here's a C# code snippet for a WPF application that detects an 800x600 resolution screen from multiple screens and opens a new window on that screen if available.
+
+First, ensure you have the necessary references:
+
+Add a reference to System.Windows.Forms to use the Screen class.
+Add a reference to System.Drawing.
+Use the following code to detect the screen and open a new window:
+
+csharp
+Copy code
+using System;
+using System.Linq;
+using System.Windows;
+using System.Windows.Forms;
+
+namespace ScreenDetectionApp
+{
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            // Detect the screen with 800x600 resolution
+            var targetScreen = Screen.AllScreens.FirstOrDefault(s => s.Bounds.Width == 800 && s.Bounds.Height == 600);
+
+            if (targetScreen != null)
+            {
+                // Create and show the new window on the detected screen
+                var newWindow = new Window
+                {
+                    Title = "Target Resolution Screen",
+                    Width = 800,
+                    Height = 600
+                };
+
+                // Calculate the top-left corner position of the target screen
+                var workingArea = targetScreen.WorkingArea;
+                newWindow.Left = workingArea.Left;
+                newWindow.Top = workingArea.Top;
+
+                newWindow.Show();
+            }
+            else
+            {
+                MessageBox.Show("No screen with 800x600 resolution found.");
+            }
+        }
+    }
+}
+This code performs the following steps:
+
+Initializes the main window.
+Searches through all available screens to find one with the resolution of 800x600.
+If such a screen is found, it creates a new window and positions it at the top-left corner of the detected screen.
+If no screen with the desired resolution is found, it displays a message box.
+Important Points:
+This code assumes you have a MainWindow.xaml defined in your WPF application.
+The System.Windows.Forms.Screen class provides the functionality to detect screen properties.
+The Window.Left and Window.Top properties are used to position the new window on the desired screen.
+Make sure to handle edge cases as needed, such as when multiple screens have the same resolution or when there are no screens matching the desired resolution.
+
+
+
+
