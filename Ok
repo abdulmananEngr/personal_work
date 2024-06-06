@@ -1,0 +1,122 @@
+Certainly! When using SizeToContent = SizeToContent.WidthAndHeight, the window will automatically size itself to fit its content. This means we need to adjust the window positioning without knowing the exact dimensions beforehand. Instead, we should account for the window's size after it is measured.
+
+Here's the updated code to handle this:
+
+MainWindow.xaml
+xml
+Copy code
+<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="600" Width="800">
+    <Grid>
+        <Button x:Name="OpenWindowButton" Content="Open Window" Width="100" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,50,50" Click="OpenWindowButton_Click"/>
+    </Grid>
+</Window>
+MainWindow.xaml.cs
+csharp
+Copy code
+using System;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Interop;
+using System.Windows.Controls;
+
+namespace WpfApp
+{
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void OpenWindowButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the button's screen position
+            var button = sender as Button;
+            var buttonPosition = button.PointToScreen(new System.Windows.Point(0, 0));
+
+            // Call the function to create the window
+            WindowCreator.CreateWindow((int)buttonPosition.X, (int)buttonPosition.Y);
+        }
+    }
+
+    public static class WindowCreator
+    {
+        public static void CreateWindow(int x_reference_position, int y_reference_position)
+        {
+            // Create a new window
+            var win = new Window
+            {
+                SizeToContent = SizeToContent.WidthAndHeight,
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Content = new Label { Content = "This is a new window" } // Example content
+            };
+
+            // Show the window off-screen initially to measure its size
+            win.Left = -10000;
+            win.Top = -10000;
+            win.Show();
+            win.Hide();
+
+            // Get the measured size
+            win.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+            var windowWidth = win.DesiredSize.Width;
+            var windowHeight = win.DesiredSize.Height;
+
+            // Get the working area of the screen
+            var workingArea = Screen.FromPoint(new System.Drawing.Point(x_reference_position, y_reference_position)).WorkingArea;
+
+            // Adjust the position to ensure the window is within the working area
+            int adjustedX = x_reference_position;
+            int adjustedY = y_reference_position;
+
+            if (x_reference_position + windowWidth > workingArea.Right)
+            {
+                adjustedX = workingArea.Right - (int)windowWidth;
+            }
+
+            if (y_reference_position + windowHeight > workingArea.Bottom)
+            {
+                adjustedY = workingArea.Bottom - (int)windowHeight;
+            }
+
+            if (adjustedX < workingArea.Left)
+            {
+                adjustedX = workingArea.Left;
+            }
+
+            if (adjustedY < workingArea.Top)
+            {
+                adjustedY = workingArea.Top;
+            }
+
+            // Set the position of the window
+            win.Left = adjustedX;
+            win.Top = adjustedY;
+
+            // Show the window
+            win.Show();
+        }
+    }
+}
+Explanation:
+MainWindow.xaml:
+
+Defines the main window with a button that, when clicked, will open a new window.
+MainWindow.xaml.cs:
+
+Handles the button click event to retrieve the button's screen coordinates and calls CreateWindow with these coordinates.
+WindowCreator:
+
+Creates a new WPF window (win) and sets SizeToContent to WidthAndHeight, so it automatically sizes to its content.
+Initially positions the window off-screen to measure its size without displaying it (Left = -10000, Top = -10000).
+Measures the window's desired size after it is loaded with content.
+Retrieves the working area of the screen using Screen.FromPoint.
+Adjusts the window position to ensure it remains within the working area:
+If the right or bottom edge would go outside the working area, it adjusts adjustedX and adjustedY.
+Ensures the window's left and top edges remain within the working area.
+Sets the adjusted position (Left and Top) for the window.
+Displays the window at the adjusted position.
+This ensures that the window opens at the reference position if it is within the screen bounds and adjusts its position if it would otherwise be outside the visible working area.
