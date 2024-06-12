@@ -1,0 +1,104 @@
+The issue with the video getting stuck when switching tracks might be due to how MPV handles the track switching command. MPV can sometimes struggle with switching tracks seamlessly, especially if the video tracks have different properties or if there is a significant delay in processing the command.
+
+Here are some suggestions to address the issue:
+
+Ensure the Tracks are Compatible: Make sure that the tracks you are switching between have similar properties (e.g., resolution, codec). Incompatible tracks might cause delays or glitches.
+
+Use the async Command: MPV supports asynchronous commands which can sometimes help in avoiding blocking issues. You can try using the async property in your command.
+
+Debug Logging: Enable debug logging in MPV to see if there are any errors or warnings that might give clues as to why the video is getting stuck.
+
+Check for MPV Updates: Ensure you are using the latest version of MPV, as updates might include bug fixes and performance improvements.
+
+Try Pausing Before Switching: Pause the video before switching the track and then resume. This sometimes helps in avoiding glitches.
+
+Here is an updated version of your code that incorporates these suggestions:
+
+csharp
+Copy code
+using System;
+using System.Windows.Forms;
+
+namespace MPVPlayerTrackSwitcher
+{
+    public partial class MainForm : Form
+    {
+        // Assuming Player.api is an instance of the MPV player API class.
+        private MPVPlayerAPI Player;
+
+        public MainForm()
+        {
+            InitializeComponent();
+
+            // Initialize the MPV player API.
+            Player = new MPVPlayerAPI();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            // Switch to track 1 when button1 is pressed.
+            SwitchTrack(1);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            // Switch to track 2 when button2 is pressed.
+            SwitchTrack(2);
+        }
+
+        private void SwitchTrack(long trackId)
+        {
+            try
+            {
+                // Pause the video before switching tracks.
+                Player.api.SetProperty("pause", true);
+
+                // Switch the video track.
+                Player.api.Command("async", "set_property", "vid", trackId.ToString());
+
+                // Resume the video after switching tracks.
+                Player.api.SetProperty("pause", false);
+
+                MessageBox.Show($"Switched to track {trackId}", "Track Switch", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to switch track: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+
+    // Dummy MPVPlayerAPI class for illustration purposes.
+    // Replace this with the actual implementation of your MPV player API.
+    public class MPVPlayerAPI
+    {
+        public dynamic api { get; }
+
+        public MPVPlayerAPI()
+        {
+            // Initialize the MPV player API instance.
+            api = new MPVApi();
+        }
+    }
+
+    // Dummy MPVApi class for illustration purposes.
+    // Replace this with the actual implementation of your MPV player API.
+    public class MPVApi
+    {
+        public void SetProperty(string property, bool value)
+        {
+            // Logic to set the property in the actual MPV player API.
+            Console.WriteLine($"Setting property {property} to {value}");
+        }
+
+        public void Command(params string[] args)
+        {
+            // Logic to execute the command in the actual MPV player API.
+            Console.WriteLine($"Executing command {string.Join(" ", args)}");
+        }
+    }
+}
+Explanation:
+Pausing the Video: The code pauses the video before switching tracks and resumes it afterward. This can help avoid the video getting stuck.
+Using async Command: The command to switch the track is sent asynchronously which may help in avoiding blocking issues.
+Replace the dummy MPVPlayerAPI and MPVApi classes with the actual implementation of your MPV player API and ensure that the methods SetProperty and Command are implemented according to the MPV API specifications.
